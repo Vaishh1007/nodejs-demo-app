@@ -1,5 +1,10 @@
 pipeline {
-    agent any  // <- simple, uses the current node/agent
+    agent {
+        docker {
+            image 'node:20-alpine'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home:/var/jenkins_home'
+        }
+    }
 
     environment {
         IMAGE_NAME = "nodejs-demo-app"
