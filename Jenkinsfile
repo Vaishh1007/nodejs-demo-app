@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18'
-            args '-v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home:/var/jenkins_home'
-        }
-    }
+    agent any
 
     environment {
         IMAGE_NAME = "nodejs-demo-app"
