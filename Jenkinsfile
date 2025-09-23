@@ -1,5 +1,5 @@
 pipeline {
-    agent any  // run directly on Jenkins node
+    agent any  // <- simple, uses the current node/agent
 
     environment {
         IMAGE_NAME = "nodejs-demo-app"
@@ -9,25 +9,64 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                echo "Checking out code from GitHub..."
                 git branch: 'main', url: 'https://github.com/Vaishh1007/nodejs-demo-app.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
+                echo "Installing npm dependencies..."
                 sh 'npm install'
             }
         }
 
         stage('Test') {
             steps {
+                echo "Running tests..."
                 sh 'npm test || echo "No tests found"'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image..."
+                sh "docker build -t $IMAGE_NAME ."
+            }
+        }
+
+        stage('Deploy Locally') {
+            steps {
+                echo "Deploying container..."
+                sh """
+                    docker stop $CONTAINER_NAME || true
+                    docker rm $CONTAINER_NAME || true
+                    docker run -d --name $CONTAINER_NAME -p 3000:3000 $IMAGE_NAME
+                """
+            }
+        }
+
+        stage('List Running Containers') {
+            steps {
+                echo "Listing all running containers..."
+                sh 'docker ps'
+            }
+        }
+
+        stage('Container Logs') {
+            steps {
+                echo "Showing logs for the container..."
+                sh "docker logs $CONTAINER_NAME || echo 'No logs found'"
             }
         }
     }
 
     post {
-        success { echo "✅ Pipeline completed successfully!" }
-        failure { echo "❌ Pipeline failed. Check logs!" }
+        success {
+            echo "✅ Pipeline completed successfully!"
+        }
+        failure {
+            echo "❌ Pipeline failed. Check logs!"
+        }
     }
 }
